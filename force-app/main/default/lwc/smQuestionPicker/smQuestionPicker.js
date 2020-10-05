@@ -38,7 +38,7 @@ export default class SmQuestionPicker extends LightningElement {
     @track draggingId = "";
     @track draggingGroupId = "";
 
-    /*
+    /* faszom
     [ // sorted by groupNo
         {
             group : {the group},
