@@ -1,0 +1,31 @@
+<template>
+    
+    <div data-role="drop-target" 
+         ondrop={handleDrop} 
+         ondragenter={handleDragEnter} 
+         ondragover={handleDragOver} 
+         ondragleave={handleDragLeave} >
+
+        <lightning-tabset>
+            <lightning-tab label={groupId}>
+
+                <template if:true={areQuestions}>
+                    <template for:each={smQuestionList} for:item="questionItem">
+                        <c-sm-question key={questionItem.Id} 
+                                    sm-question-record={questionItem}
+                                    onitemdrag={handleItemDrag}>
+                        </c-sm-question>
+                    </template>
+                </template> 
+
+                <template if:false={areQuestions}>
+                    <div class="slds-m-around_medium">
+                        No {groupId} Questions
+                    </div>     
+                </template> 
+
+            </lightning-tab>
+        </lightning-tabset>
+
+    </div>
+</template>

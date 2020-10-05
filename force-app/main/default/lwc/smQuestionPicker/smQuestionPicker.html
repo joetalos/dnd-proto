@@ -1,0 +1,74 @@
+<template>
+
+    <div class="slds-m-bottom_small">
+
+        <lightning-card title="Question Picker (Tighty Coupled)" icon-name="utility:case">
+            <div slot="actions">
+                <lightning-button
+                    variant="brand"
+                    label="Refresh" 
+                    icon-name="utility:refresh"
+                    onclick={refreshData}>
+                </lightning-button>
+                &nbsp;    
+                <lightning-button
+                    variant="brand"
+                    label="Reset" 
+                    icon-name="utility:undo"
+                    onclick={resetData}>
+                </lightning-button>     
+            </div>    
+        </lightning-card>
+
+            <lightning-layout multiple-rows>
+
+                <lightning-layout-item flexibility="no-grow">
+                    <div class="vl"></div>
+                </lightning-layout-item>
+
+                <lightning-layout-item flexibility="auto" padding="around-small"  size="12" 
+                                       small-device-size="12" medium-device-size="4" large-device-size="2" >
+
+                    <c-sm-question-group sm-question-list={questionListNoGroup} 
+                        group-id={groupNone} 
+                        onlistitemdrag={handleListItemDrag} 
+                        onitemdrop={handleItemDrop}>
+                    </c-sm-question-group>  
+
+                </lightning-layout-item>
+
+                <lightning-layout-item flexibility="no-grow">
+                    <div class="vl"></div>
+                </lightning-layout-item>
+
+
+                <template if:true={areGroups}>
+                    <template for:each={questionGroups} for:item="groupItem">
+                        <lightning-layout-item key={groupItem.group.Id} flexibility="auto" padding="around-small" size="12" 
+                                            small-device-size="12" medium-device-size="4" large-device-size="2">
+
+                            <c-sm-question-group-2 sm-question-list={groupItem.questions} 
+                                group={groupItem.group} 
+                                onlistitemdrag={handleListItemDrag} 
+                                onitemdrop={handleItemDrop}>
+                            </c-sm-question-group-2>
+
+                        </lightning-layout-item>
+
+                        <lightning-layout-item key={groupItem.spaceKey} flexibility="no-grow">
+                            <div class="vl"></div>
+                        </lightning-layout-item>
+                    </template>
+                </template>
+                <template if:false={areGroups}>
+                    <div class="slds-m-around_medium">
+                        No groups
+                    </div>     
+                </template> 
+
+
+            </lightning-layout>
+
+    </div>
+
+</template>

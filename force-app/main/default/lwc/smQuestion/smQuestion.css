@@ -1,0 +1,11 @@
+.draggable-card {
+    background-color: white;
+    border: 2px solid black;
+    border-style: solid;
+    border-radius: 5px;
+}
+
+.drag {
+    border-style: dashed;
+    opacity: 0.25;
+}
