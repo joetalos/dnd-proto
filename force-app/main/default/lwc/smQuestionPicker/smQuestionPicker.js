@@ -1,10 +1,7 @@
 import { LightningElement, track, wire } from 'lwc';
-import getAllQuestions from '@salesforce/apex/QuestionController.getAllQuestions';
-import getQuestionGroups from '@salesforce/apex/QuestionController.getAllQuestionGroups';
 import resetAllQuestionsNew from '@salesforce/apex/QuestionController.resetAllQuestionsNew';
 import getQuestionSetData from '@salesforce/apex/QuestionController.getQuestionSetData';
 import { updateRecord} from 'lightning/uiRecordApi';
-import { getRecordNotifyChange } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
@@ -14,10 +11,6 @@ import FIELD_QUESTION_GROUP_ID from '@salesforce/schema/SM_QuestionSetQuestion__
 
 //Constants for the status picklist
 const GROUP_NONE = undefined;
-const GROUP_FIRST = 'a003D000003PWyyQAG';
-const GROUP_SECOND = 'a003D000003PWz8QAG';
-const KEY_GROUP = 'group';
-const KEY_QUESTIONS = 'questions';
 
 export default class SmQuestionPicker extends LightningElement {
 
@@ -25,20 +18,14 @@ export default class SmQuestionPicker extends LightningElement {
     @track questionListAll;
 
     //Filtered arrays
-    @track questionListNoGroup; 
-    @track questionListFirstGroup; 
-    @track questionListSecondGroup;
-
-    //Status values for the lists
+    @track questionListNoGroup;
     @track groupNone = GROUP_NONE;
-    @track groupFirst = GROUP_FIRST;
-    @track groupSecond = GROUP_SECOND;
     
     //Vars to track the DRAG COURSE data
     @track draggingId = "";
     @track draggingGroupId = "";
 
-    /* faszom
+    /*
     [ // sorted by groupNo
         {
             group : {the group},
@@ -66,15 +53,18 @@ export default class SmQuestionPicker extends LightningElement {
     }
 
     initializeQuestions(data) {
+        this.questionListNoGroup = [];
         data.forEach( nextQuestion => {
             let myGroup = this.questionGroups.find( nextGrp => nextGrp.group.Id === nextQuestion.Group__c);
             if (myGroup) {
                 myGroup.questions.push(nextQuestion);
+            }
+            else {
+                this.questionListNoGroup.push(nextQuestion);
             };
         })
     }
 
-    //
     @wire( getQuestionSetData )
     wired_getQuestionSetData(result) {
         this.questionSetData = result;
