@@ -7,4 +7,8 @@
     border-style: solid;
     border-color: green;
     height: 10px;
-} 
+}
+
+div {
+    height: 5px;
+}

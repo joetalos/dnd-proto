@@ -29,11 +29,13 @@
                 <lightning-layout-item flexibility="auto" padding="around-small"  size="12" 
                                        small-device-size="12" medium-device-size="4" large-device-size="2" >
 
-                    <c-sm-question-group sm-question-list={questionListNoGroup} 
-                        group-id={groupNone} 
-                        onlistitemdrag={handleListItemDrag} 
-                        onitemdrop={handleItemDrop}>
-                    </c-sm-question-group>  
+                    <template if:true={questionListNoGroup}>
+                        <c-sm-question-group sm-content-list={questionListNoGroup.content} 
+                            group-id={groupNone} 
+                            onlistitemdrag={handleListItemDrag} 
+                            onitemdrop={handleItemDrop}>
+                        </c-sm-question-group>
+                    </template>
 
                 </lightning-layout-item>
 
@@ -47,7 +49,7 @@
                         <lightning-layout-item key={groupItem.group.Id} flexibility="auto" padding="around-small" size="12" 
                                             small-device-size="12" medium-device-size="4" large-device-size="2">
 
-                            <c-sm-question-group-2 sm-question-list={groupItem.questions} 
+                            <c-sm-question-group-2 sm-content-list={groupItem.content} 
                                 group={groupItem.group} 
                                 onlistitemdrag={handleListItemDrag} 
                                 onitemdrop={handleItemDrop}>
@@ -55,7 +57,7 @@
 
                         </lightning-layout-item>
 
-                        <lightning-layout-item key={groupItem.spaceKey} flexibility="no-grow">
+                        <lightning-layout-item key={groupItem.layoutKey} flexibility="no-grow">
                             <div class="vl"></div>
                         </lightning-layout-item>
                     </template>

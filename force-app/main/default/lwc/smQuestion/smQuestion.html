@@ -1,5 +1,5 @@
 <template>
-    <div class="slds-m-around_small draggable-card" 
+    <div class="slds-m-around_xxx-small draggable-card" 
          draggable="true" 
          data-id={smQuestionRecord.Id}         
          ondragstart={itemDragStart}
@@ -9,10 +9,8 @@
         <lightning-card title={smQuestionRecord.Name}>
             <div class="slds-p-horizontal_small">
                 <p>Id: {smQuestionRecord.Id}</p>
+                <p>Number: {smQuestionRecord.QuestionNumber__c}</p>
                 <p>Name: {smQuestionRecord.Name}</p>
-                <template if:true={smQuestionRecord.Group__r}>
-                    <p>Group: {smQuestionRecord.Group__r.Name}</p>
-                </template>
             </div>
         </lightning-card>
             

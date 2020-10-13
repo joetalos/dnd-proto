@@ -9,21 +9,21 @@
         <lightning-tabset>
             <lightning-tab label="No group">
 
-                <template if:true={areQuestions}>
-                    <template for:each={smQuestionList} for:item="questionItem">
-                        <c-sm-question key={questionItem.Id} 
-                                    sm-question-record={questionItem}
-                                    onitemdrag={handleItemDrag}>
-                        </c-sm-question>
+                <template for:each={smContentList} for:item="contentItem">
+                    <template if:false={contentItem.isQuestion}>
+                        <lightning-layout-item key={contentItem.layoutKey} flexibility="auto" size="12">
+                            <c-sm-question-gap group={group} gap-number={contentItem.gapNumber} ongapdrop={handleGapDrop}>
+                            </c-sm-question-gap>
+                        </lightning-layout-item>
                     </template>
-                </template> 
 
-                <template if:false={areQuestions}>
-                    <div class="slds-m-around_medium">
-                        No {groupId} Questions
-                    </div>     
-                </template> 
-
+                    <template if:true={contentItem.isQuestion}>
+                        <lightning-layout-item key={contentItem.layoutKey} flexibility="auto" size="12">
+                            <c-sm-question sm-question-record={contentItem.question} onitemdrag={handleItemDrag}>
+                            </c-sm-question>
+                        </lightning-layout-item>
+                    </template>
+                </template>
             </lightning-tab>
         </lightning-tabset>
 

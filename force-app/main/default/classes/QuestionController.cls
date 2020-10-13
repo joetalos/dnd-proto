@@ -34,5 +34,22 @@ public without sharing class QuestionController {
             'WHERE Id = \'a023D000004aGIiQAM\'';
         return Database.query(query);
     }
+
+    @AuraEnabled
+    public static SM_QuestionSet__c updateQuestionSetData(QuestionDndUpdateRequest request) {
+      List<SM_QuestionSetQuestion__c> questionsToUpdate = new List<SM_QuestionSetQuestion__c>();
+      for (QuestionDndUpdateRequest.QuestionUpdateReq nextReq : request.updateRequests) {
+        SM_QuestionSetQuestion__c qToUpdate = new SM_QuestionSetQuestion__c(
+          Id = nextReq.questionId,
+          QuestionNumber__c = nextReq.questionNumber,
+          Group__c = nextReq.groupId
+        );
+        questionsToUpdate.add(qToUpdate);
+      }
+      update questionsToUpdate;
+
+      return getQuestionSetData();
+    }
+
 }
 

@@ -1,9 +1,11 @@
 import { LightningElement, track, wire } from 'lwc';
 import resetAllQuestionsNew from '@salesforce/apex/QuestionController.resetAllQuestionsNew';
 import getQuestionSetData from '@salesforce/apex/QuestionController.getQuestionSetData';
+import updateQuestionSetData from '@salesforce/apex/QuestionController.updateQuestionSetData';
 import { updateRecord} from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { GroupContentItem, TYPE_GAP, TYPE_QUESTION } from 'c/groupContentItem';
 
 //The fields required for the update of the Drag target record
 import FIELD_QUESTION_ID from '@salesforce/schema/SM_QuestionSetQuestion__c.Id';
@@ -29,7 +31,7 @@ export default class SmQuestionPicker extends LightningElement {
     [ // sorted by groupNo
         {
             group : {the group},
-            questions : [array of questions] // sorted by question number
+            content : [array of gaps and questions] // sorted by question number
         }
         .
         .
@@ -40,28 +42,52 @@ export default class SmQuestionPicker extends LightningElement {
    @track questionSetData;
 
     initializeGroups(data) {
+        this.questionListNoGroup = {
+            content : [
+                { 
+                    gapNumber : 0, 
+                    layoutKey : 'G-0-0',
+                    isQuestion : false
+                } 
+            ]
+        };
         this.questionGroups = [];
         data.forEach( nextItem => {
             this.questionGroups.push(
                 {
                     group : nextItem,
-                    spaceKey : nextItem.Id + '-space',
-                    questions : []
+                    layoutKey : 'GR-' + nextItem.GroupNumber__c,
+                    content : [ 
+                        { 
+                            gapNumber : 0, 
+                            layoutKey : 'G-' + nextItem.GroupNumber__c + '-0',
+                            isQuestion : false
+                        } 
+                    ]
                 }
             )
         });
     }
 
-    initializeQuestions(data) {
-        this.questionListNoGroup = [];
+    initializeGroupContent(data) {
+        this.questionListAll = [];
+        let nextGapNumber = 1;
         data.forEach( nextQuestion => {
+            this.questionListAll.push(nextQuestion);
+
             let myGroup = this.questionGroups.find( nextGrp => nextGrp.group.Id === nextQuestion.Group__c);
-            if (myGroup) {
-                myGroup.questions.push(nextQuestion);
-            }
-            else {
-                this.questionListNoGroup.push(nextQuestion);
-            };
+            if  (!myGroup) { myGroup = this.questionListNoGroup; }
+            myGroup.content.push({
+                layoutKey : 'Q-' + myGroup.GroupNumber__c + '-' + nextQuestion.QuestionNumber__c + '-' + nextQuestion.Id, 
+                question : nextQuestion,
+                isQuestion : true 
+            });
+            myGroup.content.push({
+                gapNumber : nextGapNumber,
+                layoutKey : 'G-' + myGroup.GroupNumber__c + '-' + nextGapNumber,
+                isQuestion : false 
+            });
+            nextGapNumber++;
         })
     }
 
@@ -73,7 +99,7 @@ export default class SmQuestionPicker extends LightningElement {
                 this.initializeGroups(this.questionSetData.data.Question_Set_Groups__r);
             }
             if (this.questionSetData.data.Question_Set_Questions__r) {
-                this.initializeQuestions(this.questionSetData.data.Question_Set_Questions__r);
+                this.initializeGroupContent(this.questionSetData.data.Question_Set_Questions__r);
             }
         }
     }
@@ -116,27 +142,78 @@ export default class SmQuestionPicker extends LightningElement {
 
     }
 
+    reorderAfterDrop(draggedItem, newGroupId, newGroupNumber, gapNumber) {
+        let groupsWithNewOrderOfQuestions = [];
+        this.questionGroups.forEach(nextGroup => {
+            let currentContent = [];
+            groupsWithNewOrderOfQuestions.push( {
+                group : nextGroup.group,
+                content : currentContent
+            });
+            nextGroup.content.forEach(nextContentItem => {
+                if (nextContentItem.isQuestion) {
+                    if (nextContentItem.question.Id !== draggedItem.Id) {
+                        // this is just another question, so insert
+                        currentContent.push(nextContentItem.question);
+                    }
+                    // otherwise do not insert; this is the question we're dragging
+                }
+                else { // then it's a gap
+                    if (nextGroup.group.GroupNumber__c === newGroupNumber && nextContentItem.gapNumber === gapNumber) {
+                        // insert the dragged question here
+                        currentContent.push(draggedItem);
+                    }
+
+                }
+            })
+        })
+        return groupsWithNewOrderOfQuestions;
+    }
+
+    createApexMethodParameter(groupsWithQuestions) {
+        let parameter = [];
+        let nextQuestionNumber = 1;
+        groupsWithQuestions.forEach(nextGroup => {
+            nextGroup.content.forEach( nextQuestion => {
+                parameter.push({
+                    questionId : nextQuestion.Id,
+                    questionNumber : nextQuestionNumber++,
+                    groupId : nextGroup.group.Id
+                })
+            })
+        })
+        return parameter;
+    }
+
     //Handle the custom event dispatched from a DROP TARGET     
     handleItemDrop(evt) {
 
         //Set the DRAG SOURCE Id and new DROP TARGET Status for the update
         let draggedId = this.draggingId;
-        let updatedGroupId = evt.detail;
+        let draggedItem = this.questionListAll.find( item => item.Id === this.draggingId );
+        let newGroupId = evt.detail.groupId;
+        let newGroupNumber = evt.detail.groupNumber;
+        let gapNumber = evt.detail.gapNumber;
         
-        console.log('Dropped - Id is: ' + draggedId + ', new groupId is ' + updatedGroupId);
+        console.log('Dropped - Id is: ' + draggedId);
+        console.log('newGroupNumber is ' + newGroupNumber + ', gapNumber is ' + gapNumber);
 
-        //Handle custom validations before allowing an update
-        if (updatedGroupId === this.draggingGroupId) {
-
-            //DO NOTHING if the DRAG status is NOT the DROP target Status
-
-        } else if (updatedGroupId == this.groupNone) { 
+        if (newGroupId == this.groupNone) { 
                    
             //Don't allow any record to be assigned to the New list
-            this.showToast(this,'Drop Not Allowed','Case may not be reset as New!', 'error');
+            this.showToast(this,'Drop Not Allowed','Question may not be reset as new!', 'error');
 
-        } else {
-
+        }
+        else {
+            let parameter = this.createApexMethodParameter(this.reorderAfterDrop(draggedItem, newGroupId, newGroupNumber, gapNumber));
+            let theRequest = {
+                updateRequests : parameter
+            }
+            updateQuestionSetData({ request : theRequest})
+                .then( () => {
+                    refreshApex(this.questionSetData);
+                });
+                /*
             //Update the DRAG SOURCE record with its new status    
             let fieldsToSave = {};
             fieldsToSave[FIELD_QUESTION_ID.fieldApiName] = draggedId;
@@ -151,6 +228,7 @@ export default class SmQuestionPicker extends LightningElement {
                 //Notify any error
                 this.showToast(this,'Error Updating Record', error.body.message, 'error');
             });
+            */
         }
     }
 

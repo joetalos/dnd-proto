@@ -2,13 +2,13 @@ import { LightningElement, api, track } from 'lwc';
 
 export default class SmQuestionGroup2 extends LightningElement {
 
-    @api smQuestionList;
+    @api smContentList;
     @api group;
 
     //Getter indicates if any items in the list
     get areQuestions() {
-        if(this.smQuestionList) {
-           return this.smQuestionList.length>0;
+        if(this.smContentList) {
+           return this.smContentList.length>0;
         } else {
            return false; 
         }
@@ -34,6 +34,22 @@ export default class SmQuestionGroup2 extends LightningElement {
         this.dispatchEvent(event);
     }
 
+    //DROP TARGET drop event handler
+    handleGapDrop(evt) {
+            
+        console.log('handleGapDrop groupId: ' + this.group.Id);
+        
+        //Cancel the event
+        this.cancel(evt);
+
+        //Dispatch the custom event to raise the detail payload up one level        
+        const event = new CustomEvent('itemdrop', {
+            detail: evt.detail
+        });
+        this.dispatchEvent(event);
+    }
+
+    /*
     //DROP TARGET dragenter event handler
     handleDragEnter(evt) {
 
@@ -68,24 +84,6 @@ export default class SmQuestionGroup2 extends LightningElement {
 
     }
 
-    //DROP TARGET drop event handler
-    handleDrop(evt) {
-            
-        console.log('Handling Drop into drop tagert for groupId: ' + this.group.Id);
-        
-        //Cancel the event
-        this.cancel(evt);
-
-        //Dispatch the custom event to raise the detail payload up one level        
-        const event = new CustomEvent('itemdrop', {
-            detail: this.group.Id
-        });
-        this.dispatchEvent(event);
-
-        this.removeDragOverStyle();
- 
-    }
-
     //Set the style to indicate the element is being dragged over
     addDragOverStyle() {
         let draggableElement = this.template.querySelector('[data-role="drop-target"]');
@@ -97,5 +95,5 @@ export default class SmQuestionGroup2 extends LightningElement {
         let draggableElement = this.template.querySelector('[data-role="drop-target"]');
         draggableElement.classList.remove('over');
     }
-
+*/
 }

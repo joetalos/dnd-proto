@@ -1,17 +1,11 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api } from 'lwc';
 
-export default class SmQuestionGroup extends LightningElement {
+export default class SmQuestionGap extends LightningElement {
+    @api gapNumber;
+    @api group;
 
-    @api smContentList;
-    @api groupId;
-
-    //Getter indicates if any items in the list
-    get areQuestions() {
-        if(this.smContentList) {
-           return this.smContentList.length>0;
-        } else {
-           return false; 
-        }
+    getGroupId() {
+        return this.group ? this.group.Id : 'none';
     }
 
     //Function to cancel drag n drop events
@@ -24,7 +18,7 @@ export default class SmQuestionGroup extends LightningElement {
     //DRAG SOURCE drag event handler dispatched from the child component
     handleItemDrag(evt) {
         
-        console.log('Drag event from the drag target: ' + evt.detailinto + ' for drop target: ' + this.groupId);
+        console.log('Drag event from the drag target: ' + evt.detailinto + ' for drop target: group [' + this.getGroupId() + '], question [' + this.gapNumber + ']');
         this.cancel(evt);
 
         //Dispatch the custom event to raise the detail payload up one level
@@ -37,7 +31,7 @@ export default class SmQuestionGroup extends LightningElement {
     //DROP TARGET dragenter event handler
     handleDragEnter(evt) {
 
-        console.log('Drag Enter event for ' + this.groupId);
+        console.log('Drag Enter event for group [' + this.getGroupId() + '], question [' + this.gapNumber + ']');
 
         //Cancel the event
         this.cancel(evt);
@@ -47,7 +41,7 @@ export default class SmQuestionGroup extends LightningElement {
     //DROP TARGET dragover event handler
     handleDragOver(evt) {
         
-        console.log('Drag Over event for ' + this.groupId);
+        console.log('Drag Over event for group [' + this.getGroupId() + '], question [' + this.gapNumber + ']');
         
         //Cancel the event
         this.cancel(evt);
@@ -59,7 +53,7 @@ export default class SmQuestionGroup extends LightningElement {
     //DROP TARGET dragleave event handler
     handleDragLeave(evt) {
         
-        console.log('Drag Leave event for ' + this.groupId);
+        console.log('Drag Leave event for group [' + this.getGroupId() + '], question [' + this.gapNumber + ']');
         
         //Cancel the event
         this.cancel(evt);
@@ -71,15 +65,20 @@ export default class SmQuestionGroup extends LightningElement {
     //DROP TARGET drop event handler
     handleDrop(evt) {
             
-        console.log('Handling Drop into drop tagert for groupId: ' + this.groupId);
+        console.log('Handling Drop into drop tagert for group [' + this.getGroupId() + '], question [' + this.gapNumber + ']');
         
         //Cancel the event
         this.cancel(evt);
 
         //Dispatch the custom event to raise the detail payload up one level        
-        const event = new CustomEvent('itemdrop', {
-            detail: this.groupId
+        const event = new CustomEvent('gapdrop', {
+            detail: {
+                groupId : this.getGroupId(),
+                groupNumber : (this.group ? this.group.GroupNumber__c : 0),
+                gapNumber : this.gapNumber 
+            }
         });
+        console.log('raising gapdrop event...');
         this.dispatchEvent(event);
 
         this.removeDragOverStyle();
@@ -97,5 +96,4 @@ export default class SmQuestionGroup extends LightningElement {
         let draggableElement = this.template.querySelector('[data-role="drop-target"]');
         draggableElement.classList.remove('over');
     }
-
 }
