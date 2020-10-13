@@ -1,15 +1,7 @@
 import { LightningElement, track, wire } from 'lwc';
-import resetAllQuestionsNew from '@salesforce/apex/QuestionController.resetAllQuestionsNew';
 import getQuestionSetData from '@salesforce/apex/QuestionController.getQuestionSetData';
 import updateQuestionSetData from '@salesforce/apex/QuestionController.updateQuestionSetData';
-import { updateRecord} from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { GroupContentItem, TYPE_GAP, TYPE_QUESTION } from 'c/groupContentItem';
-
-//The fields required for the update of the Drag target record
-import FIELD_QUESTION_ID from '@salesforce/schema/SM_QuestionSetQuestion__c.Id';
-import FIELD_QUESTION_GROUP_ID from '@salesforce/schema/SM_QuestionSetQuestion__c.Group__c';
 
 //Constants for the status picklist
 const GROUP_NONE = undefined;
@@ -113,18 +105,6 @@ export default class SmQuestionPicker extends LightningElement {
         }
     }
     
-    //Manually reset all Cases to New    
-    resetData() {
-        resetAllQuestionsNew()
-        .then( () => {
-            this.refreshData();
-        })
-        .catch(error => {
-            //Notify any error
-            this.showToast(this,'Error Resetting Data', error.body.message, 'error');
-        });
-    }   
-
     //Manually refresh the data and the reactive DROP TARGET lists 
     refreshData() {
         refreshApex(this.questionGroups);
@@ -214,48 +194,14 @@ export default class SmQuestionPicker extends LightningElement {
         console.log('Dropped - Id is: ' + draggedId);
         console.log('newGroupNumber is ' + newGroupNumber + ', gapNumber is ' + gapNumber);
 
-        if (newGroupId == this.groupNone) {
-                   
-            //Don't allow any record to be assigned to the New list
-            this.showToast(this,'Drop Not Allowed','Question may not be reset as new!', 'error');
-
+        let parameter = this.createApexMethodParameter(this.reorderAfterDrop(draggedItem, newGroupNumber, gapNumber));
+        let theRequest = {
+            updateRequests : parameter
         }
-        else {
-            let parameter = this.createApexMethodParameter(this.reorderAfterDrop(draggedItem, newGroupNumber, gapNumber));
-            let theRequest = {
-                updateRequests : parameter
-            }
-            updateQuestionSetData({ request : theRequest})
-                .then( () => {
-                    refreshApex(this.questionSetData);
-                });
-                /*
-            //Update the DRAG SOURCE record with its new status    
-            let fieldsToSave = {};
-            fieldsToSave[FIELD_QUESTION_ID.fieldApiName] = draggedId;
-            fieldsToSave[FIELD_QUESTION_GROUP_ID.fieldApiName] = updatedGroupId;
-            const recordInput = { fields:fieldsToSave }
-
-            updateRecord(recordInput)
-            .then(() => {
+        updateQuestionSetData({ request : theRequest})
+            .then( () => {
                 refreshApex(this.questionSetData);
-            })
-            .catch(error => {
-                //Notify any error
-                this.showToast(this,'Error Updating Record', error.body.message, 'error');
             });
-            */
-        }
-    }
-
-    //Notification utility function
-    showToast = (firingComponent, toastTitle, toastBody, variant)  => {
-        const evt = new ShowToastEvent({
-            title: toastTitle,
-            message: toastBody,
-            variant: variant
-        });
-        firingComponent.dispatchEvent(evt);
     }
 
 }
