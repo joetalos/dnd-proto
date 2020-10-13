@@ -78,7 +78,10 @@ export default class SmQuestionGroup extends LightningElement {
 
         //Dispatch the custom event to raise the detail payload up one level        
         const event = new CustomEvent('itemdrop', {
-            detail: this.groupId
+            detail: {
+                groupId: 'noGroup',
+                groupNumber : 0
+            }
         });
         this.dispatchEvent(event);
 

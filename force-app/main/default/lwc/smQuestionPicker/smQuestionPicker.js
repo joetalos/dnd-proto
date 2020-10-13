@@ -142,8 +142,15 @@ export default class SmQuestionPicker extends LightningElement {
 
     }
 
-    reorderAfterDrop(draggedItem, newGroupId, newGroupNumber, gapNumber) {
+    reorderAfterDrop(draggedItem, newGroupNumber, gapNumber) {
         let groupsWithNewOrderOfQuestions = [];
+        // care for the case when a question is dropped into the orphan (no group) list
+        if (newGroupNumber === 0) {
+            groupsWithNewOrderOfQuestions.push({
+                content : [ draggedItem ]
+            });
+        }
+
         this.questionGroups.forEach(nextGroup => {
             let currentContent = [];
             groupsWithNewOrderOfQuestions.push( {
@@ -174,13 +181,22 @@ export default class SmQuestionPicker extends LightningElement {
         let parameter = [];
         let nextQuestionNumber = 1;
         groupsWithQuestions.forEach(nextGroup => {
-            nextGroup.content.forEach( nextQuestion => {
+            if (!nextGroup.group) {
+                let newlyOrphanedQuestion = nextGroup.content[0];
                 parameter.push({
-                    questionId : nextQuestion.Id,
-                    questionNumber : nextQuestionNumber++,
-                    groupId : nextGroup.group.Id
+                    questionId : newlyOrphanedQuestion.Id,
+                    questionNumber : 0
+                });
+            }
+            else {
+                nextGroup.content.forEach( nextQuestion => {
+                    parameter.push({
+                        questionId : nextQuestion.Id,
+                        questionNumber : nextQuestionNumber++,
+                        groupId : nextGroup.group.Id
+                    })
                 })
-            })
+            }
         })
         return parameter;
     }
@@ -198,14 +214,14 @@ export default class SmQuestionPicker extends LightningElement {
         console.log('Dropped - Id is: ' + draggedId);
         console.log('newGroupNumber is ' + newGroupNumber + ', gapNumber is ' + gapNumber);
 
-        if (newGroupId == this.groupNone) { 
+        if (newGroupId == this.groupNone) {
                    
             //Don't allow any record to be assigned to the New list
             this.showToast(this,'Drop Not Allowed','Question may not be reset as new!', 'error');
 
         }
         else {
-            let parameter = this.createApexMethodParameter(this.reorderAfterDrop(draggedItem, newGroupId, newGroupNumber, gapNumber));
+            let parameter = this.createApexMethodParameter(this.reorderAfterDrop(draggedItem, newGroupNumber, gapNumber));
             let theRequest = {
                 updateRequests : parameter
             }
