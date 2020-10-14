@@ -17,7 +17,6 @@ export default class SmQuestionPicker extends LightningElement {
     
     //Vars to track the DRAG COURSE data
     @track draggingId = "";
-    @track draggingGroupId = "";
 
     /*
     [ // sorted by groupNo
@@ -118,7 +117,6 @@ export default class SmQuestionPicker extends LightningElement {
 
         //Capture the detail passed with the event from the DRAG target
         this.draggingId = evt.detail.dragTargetId;
-        this.draggingGroupId = evt.detail.dragTargetGroupId;
 
     }
 
@@ -187,7 +185,6 @@ export default class SmQuestionPicker extends LightningElement {
         //Set the DRAG SOURCE Id and new DROP TARGET Status for the update
         let draggedId = this.draggingId;
         let draggedItem = this.questionListAll.find( item => item.Id === this.draggingId );
-        let newGroupId = evt.detail.groupId;
         let newGroupNumber = evt.detail.groupNumber;
         let gapNumber = evt.detail.gapNumber;
         

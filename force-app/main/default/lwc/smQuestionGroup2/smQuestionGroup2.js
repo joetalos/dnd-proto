@@ -5,15 +5,6 @@ export default class SmQuestionGroup2 extends LightningElement {
     @api smContentList;
     @api group;
 
-    //Getter indicates if any items in the list
-    get areQuestions() {
-        if(this.smContentList) {
-           return this.smContentList.length>0;
-        } else {
-           return false; 
-        }
-    }
-
     //Function to cancel drag n drop events
     cancel(evt) {
         if (evt.stopPropagation) evt.stopPropagation();
@@ -34,7 +25,7 @@ export default class SmQuestionGroup2 extends LightningElement {
         this.dispatchEvent(event);
     }
 
-    //DROP TARGET drop event handler
+    //drop event handler dispatched from the child component
     handleGapDrop(evt) {
             
         console.log('handleGapDrop groupId: ' + this.group.Id);
@@ -49,51 +40,4 @@ export default class SmQuestionGroup2 extends LightningElement {
         this.dispatchEvent(event);
     }
 
-    /*
-    //DROP TARGET dragenter event handler
-    handleDragEnter(evt) {
-
-        console.log('Drag Enter event for ' + this.group.Id);
-
-        //Cancel the event
-        this.cancel(evt);
-
-    }
-
-    //DROP TARGET dragover event handler
-    handleDragOver(evt) {
-        
-        console.log('Drag Over event for ' + this.group.Id);
-        
-        //Cancel the event
-        this.cancel(evt);
-
-        this.addDragOverStyle()
- 
-    }
-
-    //DROP TARGET dragleave event handler
-    handleDragLeave(evt) {
-        
-        console.log('Drag Leave event for ' + this.group.Id);
-        
-        //Cancel the event
-        this.cancel(evt);
-        
-        this.removeDragOverStyle();
-
-    }
-
-    //Set the style to indicate the element is being dragged over
-    addDragOverStyle() {
-        let draggableElement = this.template.querySelector('[data-role="drop-target"]');
-        draggableElement.classList.add('over');
-    }
-
-    //Reset the style
-    removeDragOverStyle() {
-        let draggableElement = this.template.querySelector('[data-role="drop-target"]');
-        draggableElement.classList.remove('over');
-    }
-*/
 }

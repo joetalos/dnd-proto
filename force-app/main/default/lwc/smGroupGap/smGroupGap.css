@@ -1,0 +1,19 @@
+.over {
+    border-style: solid dotted;
+    border-color: green;
+}
+
+.hl {
+    border-style: solid;
+    border-color: green;
+    height: 10px;
+}
+
+div {
+    height: 5px;
+}
+
+.vl {
+    border-left: 6px solid green;
+    height: 230px;
+}  
