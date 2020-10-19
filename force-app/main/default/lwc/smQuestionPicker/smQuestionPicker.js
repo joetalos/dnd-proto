@@ -9,6 +9,7 @@ import GroupItemModel from 'c/groupItemModel';
 import QuestionItemModel from 'c/questionItemModel';
 import QuestionGapItemModel from 'c/questionGapItemModel';
 import GroupUpdateReq from 'c/groupUpdateReq';
+import QuestionUpdateReq from 'c/questionUpdateReq';
 
 //Constants for the status picklist
 const GROUP_NONE = undefined;
@@ -224,25 +225,13 @@ export default class SmQuestionPicker extends LightningElement {
             let newGapNumber = evt.detail.gapNumber;
             console.log('newGapNumber is ' + newGapNumber);
 
-            let groupsWithNewOrder = [];
-
-            this.questionGroups.forEach(nextItem => {
-                if (nextItem.isGap) {
-                    if (nextItem.gapNumber === newGapNumber) {
-                        groupsWithNewOrder.push(draggedItem);
-                    }
-                }
-                else {
-                    if (nextItem.group.Id !== draggedItem.group.Id) {
-                        groupsWithNewOrder.push(nextItem);
-                    }
-                }
-            });
-
-            let parameter = this.createApexMethodParameter2(groupsWithNewOrder);
+            let groupsWithNewOrder = this.reorderEverything(this.questionGroups, newGapNumber, draggedItem);
+            let groupUpdateRequestsParameter = this.createGroupUpdateRequestsParameter(groupsWithNewOrder);
+            let questionUpdateRequestsParameter = this.createQuestionUpdateRequestsParameter(groupsWithNewOrder);
 
             let theRequest = {
-                groupUpdateRequests : parameter
+                groupUpdateRequests : groupUpdateRequestsParameter,
+                updateRequests : questionUpdateRequestsParameter
             }
             updateGroupSetData({ request : theRequest})
                 .then( () => {
@@ -250,16 +239,52 @@ export default class SmQuestionPicker extends LightningElement {
                 });
         }
         this.resetDraggingBuffers();
-   }
+    }
 
-   createApexMethodParameter2(groupsWithQuestions) {
+    reorderEverything(questionGroups, newGapNumber, draggedItem) {
+        let groupsWithNewOrder = [];
+
+        questionGroups.forEach(nextItem => {
+            if (nextItem.isGap) {
+                if (nextItem.gapNumber === newGapNumber) {
+                    groupsWithNewOrder.push(draggedItem);
+                }
+            }
+            else {
+                if (nextItem.group.Id !== draggedItem.group.Id) {
+                    groupsWithNewOrder.push(nextItem);
+                }
+            }
+        });
+        return groupsWithNewOrder;
+    }
+
+    createGroupUpdateRequestsParameter(groupsWithQuestions) {
         let parameter = [];
         let nextGroupNumber = 1;
-        let nextQuestionNumber = 1;
         groupsWithQuestions.forEach(nextGroup => {
             parameter.push(new GroupUpdateReq(nextGroup.group.Id, nextGroupNumber++));
         });
         return parameter;
     }
 
+    createQuestionUpdateRequestsParameter(groupsWithQuestions) {
+        let parameter = [];
+
+        this.questionListNoGroup.content.forEach(nextItem => {
+            if (!nextItem.isGap) {
+                parameter.push(new QuestionUpdateReq(nextItem.question.Id, 0)); // make Group__c undefined 
+            }
+        });
+
+        let nextQuestionNumber = 1;
+        groupsWithQuestions.forEach(nextGroup => {
+            nextGroup.content.forEach( nextItem => {
+                if (!nextItem.isGap) {
+                    parameter.push(new QuestionUpdateReq(nextItem.question.Id, nextQuestionNumber++, nextGroup.group.Id));
+                }
+            })
+        })
+        return parameter;
+    }
 }

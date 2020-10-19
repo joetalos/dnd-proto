@@ -35,8 +35,7 @@ public without sharing class QuestionController {
         return Database.query(query);
     }
 
-    @AuraEnabled
-    public static SM_QuestionSet__c updateQuestionSetData(QuestionDndUpdateRequest request) {
+    private static List<SM_QuestionSetQuestion__c> createQuestionUpdateArray(QuestionDndUpdateRequest request) {
       List<SM_QuestionSetQuestion__c> questionsToUpdate = new List<SM_QuestionSetQuestion__c>();
       for (QuestionDndUpdateRequest.QuestionUpdateReq nextReq : request.updateRequests) {
         SM_QuestionSetQuestion__c qToUpdate = new SM_QuestionSetQuestion__c(
@@ -46,13 +45,18 @@ public without sharing class QuestionController {
         );
         questionsToUpdate.add(qToUpdate);
       }
+      return questionsToUpdate;
+    }
+
+    @AuraEnabled
+    public static SM_QuestionSet__c updateQuestionSetData(QuestionDndUpdateRequest request) {
+      List<SM_QuestionSetQuestion__c> questionsToUpdate = createQuestionUpdateArray(request);
       update questionsToUpdate;
 
       return getQuestionSetData();
     }
 
-    @AuraEnabled
-    public static SM_QuestionSet__c updateGroupSetData(QuestionDndUpdateRequest request) {
+    private static List<SM_QuestionSetGroup__c> createGroupUpdateArray(QuestionDndUpdateRequest request) {
       List<SM_QuestionSetGroup__c	> groupsToUpdate = new List<SM_QuestionSetGroup__c	>();
       for (QuestionDndUpdateRequest.GroupUpdateReq nextReq : request.groupUpdateRequests) {
         SM_QuestionSetGroup__c grToUpdate = new SM_QuestionSetGroup__c	(
@@ -61,7 +65,23 @@ public without sharing class QuestionController {
         );
         groupsToUpdate.add(grToUpdate);
       }
-      update groupsToUpdate;
+      return groupsToUpdate;
+    }
+
+    @AuraEnabled
+    public static SM_QuestionSet__c updateGroupSetData(QuestionDndUpdateRequest request) {
+      List<SM_QuestionSetGroup__c	> groupsToUpdate = createGroupUpdateArray(request);
+      List<SM_QuestionSetQuestion__c> questionsToUpdate = createQuestionUpdateArray(request);
+
+      Savepoint sp = Database.setSavepoint();
+
+      try {
+        update questionsToUpdate;
+        update groupsToUpdate;
+      }
+      catch (Exception  e) {
+        Database.rollback(sp);
+      }
 
       return getQuestionSetData();
     }
