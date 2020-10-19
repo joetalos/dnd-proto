@@ -51,5 +51,19 @@ public without sharing class QuestionController {
       return getQuestionSetData();
     }
 
+    @AuraEnabled
+    public static SM_QuestionSet__c updateGroupSetData(QuestionDndUpdateRequest request) {
+      List<SM_QuestionSetGroup__c	> groupsToUpdate = new List<SM_QuestionSetGroup__c	>();
+      for (QuestionDndUpdateRequest.GroupUpdateReq nextReq : request.groupUpdateRequests) {
+        SM_QuestionSetGroup__c grToUpdate = new SM_QuestionSetGroup__c	(
+          Id = nextReq.groupId,
+          GroupNumber__c = nextReq.groupNumber
+        );
+        groupsToUpdate.add(grToUpdate);
+      }
+      update groupsToUpdate;
+
+      return getQuestionSetData();
+    }
 }
 

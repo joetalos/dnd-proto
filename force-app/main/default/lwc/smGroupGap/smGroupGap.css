@@ -10,10 +10,6 @@
 }
 
 div {
-    height: 5px;
-}
-
-.vl {
     border-left: 6px solid green;
     height: 230px;
-}  
+}

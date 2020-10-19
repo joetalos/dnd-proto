@@ -8,6 +8,16 @@ public with sharing class QuestionDndUpdateRequest {
         public String groupId { get; set; }
     }
 
+    public class GroupUpdateReq {
+        @AuraEnabled
+        public String groupId { get; set; }
+        @AuraEnabled
+        public Integer groupNumber { get; set; }
+    }
+
     @AuraEnabled
     public List<QuestionUpdateReq> updateRequests { get; set; }
+
+    @AuraEnabled
+    public List<GroupUpdateReq> groupUpdateRequests { get; set; }
 }

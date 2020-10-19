@@ -21,34 +21,39 @@
                     <template if:true={questionListNoGroup}>
                         <c-sm-question-group sm-content-list={questionListNoGroup.content} 
                             group-id={groupNone} 
-                            onlistitemdrag={handleListItemDrag} 
-                            onitemdrop={handleItemDrop}>
+                            onlistitemdrag={handleItemDrag} 
+                            onitemdrop={handleQuestionItemDrop}>
                         </c-sm-question-group>
                     </template>
 
                 </lightning-layout-item>
 
-                <lightning-layout-item flexibility="no-grow">
-                    <div class="vl"></div>
-                </lightning-layout-item>
-
-
                 <template if:true={areGroups}>
                     <template for:each={questionGroups} for:item="groupItem">
-                        <lightning-layout-item key={groupItem.group.Id} flexibility="auto" padding="around-small" size="12" 
-                                            small-device-size="12" medium-device-size="4" large-device-size="2">
+                        <template if:true={groupItem.isGap}>
+                            <lightning-layout-item key={groupItem.layoutKey} flexibility="no-grow">
+                                <c-sm-group-gap group-gap-number={groupItem.gapNumber} ongroupgapdrop={handleGroupGapDrop}>
+                                </c-sm-group-gap>
+                            </lightning-layout-item>
+                        </template>
 
-                            <c-sm-question-group-2 sm-content-list={groupItem.content} 
-                                group={groupItem.group} 
-                                onlistitemdrag={handleListItemDrag} 
-                                onitemdrop={handleItemDrop}>
-                            </c-sm-question-group-2>
+                        <template if:false={groupItem.isGap}>
+                            <lightning-layout-item key={groupItem.group.Id} flexibility="auto" padding="around-small" size="12" 
+                                                small-device-size="12" medium-device-size="4" large-device-size="2">
 
-                        </lightning-layout-item>
+                                <!-- onlistitemdrag: responding to the drag action of the smQuestion - need to catch the question ID. This event is coming from smQuestion, and 
+                                    dispathced through the smQuestionGroup2 -->
+                                <!-- onitemdrag: responding to the drag action of the smQuestionGroup2 - need to catch the group ID -->
+                                <!-- onitemdrop: responding to the drop of smQuestion. It's dropped into a gap, but dispatched through the group containing the gap -->
+                                <c-sm-question-group-2 sm-content-list={groupItem.content} 
+                                    group={groupItem.group} 
+                                    onlistitemdrag={handleItemDrag} 
+                                    onitemdrop={handleQuestionItemDrop}
+                                    onitemdrag={handleItemDrag}> 
+                                </c-sm-question-group-2>
 
-                        <lightning-layout-item key={groupItem.layoutKey} flexibility="no-grow">
-                            <div class="vl"></div>
-                        </lightning-layout-item>
+                            </lightning-layout-item>
+                        </template>
                     </template>
                 </template>
                 <template if:false={areGroups}>

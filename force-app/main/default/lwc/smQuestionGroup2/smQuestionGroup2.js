@@ -1,9 +1,15 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api } from 'lwc';
+import SmDraggableRecordContainer from 'c/smDraggableRecordContainer';
 
-export default class SmQuestionGroup2 extends LightningElement {
+export default class SmQuestionGroup2 extends SmDraggableRecordContainer {
 
     @api smContentList;
-    @api group;
+    @api get group() {
+        return this.theRecord;
+    }
+    set group(value) {
+        this.theRecord = value;
+    };
 
     //Function to cancel drag n drop events
     cancel(evt) {

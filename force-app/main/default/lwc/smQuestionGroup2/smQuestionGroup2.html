@@ -1,20 +1,24 @@
 <template>
     
-    <div >
+    <div class="slds-m-around_xxx-small draggable-card" 
+         draggable="true" 
+         data-id={group.Id}
+         ondragstart={itemDragStart}
+         ondragend={itemDragEnd}>
         <lightning-tabset>
             <lightning-tab label={group.Name}>
                 <lightning-layout multiple-rows>
 
                     <template for:each={smContentList} for:item="contentItem">
 
-                        <template if:false={contentItem.isQuestion}>
+                        <template if:true={contentItem.isGap}>
                             <lightning-layout-item key={contentItem.layoutKey} flexibility="auto" size="12">
                                 <c-sm-question-gap group={group} gap-number={contentItem.gapNumber} ongapdrop={handleGapDrop}>
                                 </c-sm-question-gap>
                             </lightning-layout-item>
                         </template>
 
-                        <template if:true={contentItem.isQuestion}>
+                        <template if:false={contentItem.isGap}>
                             <lightning-layout-item key={contentItem.layoutKey} flexibility="auto" size="12">
                             <c-sm-question sm-question-record={contentItem.question} onitemdrag={handleItemDrag}>
                             </c-sm-question>

@@ -10,7 +10,7 @@
             <lightning-tab label="No group">
 
                 <template for:each={smContentList} for:item="contentItem">
-                    <template if:true={contentItem.isQuestion}>
+                    <template if:false={contentItem.isGap}>
                         <lightning-layout-item key={contentItem.layoutKey} flexibility="auto" size="12">
                             <c-sm-question sm-question-record={contentItem.question} onitemdrag={handleItemDrag}>
                             </c-sm-question>

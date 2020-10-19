@@ -2,6 +2,10 @@ import { LightningElement } from 'lwc';
 
 export default class SmDropTarget extends LightningElement {
 
+    constructor() {
+        super();
+    }
+
     getTargetLabel() { return 'NO LABEL'; }
 
     //Function to cancel drag n drop events
