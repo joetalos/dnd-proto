@@ -1,7 +1,6 @@
 import { LightningElement, track, wire } from 'lwc';
 import getQuestionSetData from '@salesforce/apex/QuestionController.getQuestionSetData';
 import updateQuestionSetData from '@salesforce/apex/QuestionController.updateQuestionSetData';
-import updateGroupSetData from '@salesforce/apex/QuestionController.updateGroupSetData';
 import { refreshApex } from '@salesforce/apex';
 import SmGroupGap from 'c/smGroupGap';
 import GapItemModel from 'c/gapItemModel';
@@ -10,6 +9,7 @@ import QuestionItemModel from 'c/questionItemModel';
 import QuestionGapItemModel from 'c/questionGapItemModel';
 import GroupUpdateReq from 'c/groupUpdateReq';
 import QuestionUpdateReq from 'c/questionUpdateReq';
+import GroupDropHandler from 'c/groupDropHandler';
 
 //Constants for the status picklist
 const GROUP_NONE = undefined;
@@ -214,77 +214,12 @@ export default class SmQuestionPicker extends LightningElement {
     }
 
     handleGroupGapDrop(evt) {
-
         console.log('Dropped - groupId is: ' + this.draggingGroup.group.Id);
 
         if (!this.draggingQuestion) { // if we're only dragging a group!!!
-            // get the dragged item (in this case the group)
-            let draggedItem = this.draggingGroup;
-
-            // the number of groupgap the group has been dropped into:
-            let newGapNumber = evt.detail.gapNumber;
-            console.log('newGapNumber is ' + newGapNumber);
-
-            let groupsWithNewOrder = this.reorderEverything(this.questionGroups, newGapNumber, draggedItem);
-            let groupUpdateRequestsParameter = this.createGroupUpdateRequestsParameter(groupsWithNewOrder);
-            let questionUpdateRequestsParameter = this.createQuestionUpdateRequestsParameter(groupsWithNewOrder);
-
-            let theRequest = {
-                groupUpdateRequests : groupUpdateRequestsParameter,
-                updateRequests : questionUpdateRequestsParameter
-            }
-            updateGroupSetData({ request : theRequest})
-                .then( () => {
-                    refreshApex(this.questionSetData);
-                });
+            let dropHandler = new GroupDropHandler(this.questionSetData, this.questionListNoGroup, this.questionGroups);
+            dropHandler.handleGroupGapDrop(evt, this.draggingGroup);
         }
         this.resetDraggingBuffers();
-    }
-
-    reorderEverything(questionGroups, newGapNumber, draggedItem) {
-        let groupsWithNewOrder = [];
-
-        questionGroups.forEach(nextItem => {
-            if (nextItem.isGap) {
-                if (nextItem.gapNumber === newGapNumber) {
-                    groupsWithNewOrder.push(draggedItem);
-                }
-            }
-            else {
-                if (nextItem.group.Id !== draggedItem.group.Id) {
-                    groupsWithNewOrder.push(nextItem);
-                }
-            }
-        });
-        return groupsWithNewOrder;
-    }
-
-    createGroupUpdateRequestsParameter(groupsWithQuestions) {
-        let parameter = [];
-        let nextGroupNumber = 1;
-        groupsWithQuestions.forEach(nextGroup => {
-            parameter.push(new GroupUpdateReq(nextGroup.group.Id, nextGroupNumber++));
-        });
-        return parameter;
-    }
-
-    createQuestionUpdateRequestsParameter(groupsWithQuestions) {
-        let parameter = [];
-
-        this.questionListNoGroup.content.forEach(nextItem => {
-            if (!nextItem.isGap) {
-                parameter.push(new QuestionUpdateReq(nextItem.question.Id, 0)); // make Group__c undefined 
-            }
-        });
-
-        let nextQuestionNumber = 1;
-        groupsWithQuestions.forEach(nextGroup => {
-            nextGroup.content.forEach( nextItem => {
-                if (!nextItem.isGap) {
-                    parameter.push(new QuestionUpdateReq(nextItem.question.Id, nextQuestionNumber++, nextGroup.group.Id));
-                }
-            })
-        })
-        return parameter;
     }
 }
