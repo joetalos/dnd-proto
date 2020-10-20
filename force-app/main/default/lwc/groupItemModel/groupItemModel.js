@@ -3,7 +3,7 @@ import LayoutItemModel from 'c/layoutItemModel';
 
 export default class GroupItemModel extends LayoutItemModel {
 
-    // an instance of SM_QuestionSetGroup__c
+    // an instance of SM_QuestionSetGroup__c . 
     group;
 
     // an array of GapItemModel's and QuestionItemModel's

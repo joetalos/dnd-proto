@@ -1,15 +1,16 @@
 import { refreshApex } from '@salesforce/apex';
 import updateGroupSetData from '@salesforce/apex/QuestionController.updateGroupSetData';
 import GroupUpdateReq from 'c/groupUpdateReq';
-import QuestionUpdateReq from 'c/questionUpdateReq';
+import DropHandler from 'c/dropHandler';
 
-export default class GroupDropHandler {
+export default class GroupDropHandler extends DropHandler {
     questionSetData;
     questionListNoGroup;
     questionGroups;
 
     /* "interface" */
     constructor(questionSetData, questionListNoGroup, questionGroups) {
+        super();
         this.questionSetData = questionSetData;
         this.questionListNoGroup = questionListNoGroup;
         this.questionGroups = questionGroups;
@@ -24,7 +25,7 @@ export default class GroupDropHandler {
         let groupsWithNewOrder = this.reorderEverything(this.questionGroups, newGapNumber, draggedItem);
         let theRequest = {
             groupUpdateRequests : this.createGroupUpdateRequestsParameter(groupsWithNewOrder),
-            updateRequests : this.createQuestionUpdateRequestsParameter(groupsWithNewOrder)
+            updateRequests : this.createQuestionUpdateRequestsParameter(this.questionListNoGroup, groupsWithNewOrder)
         }
         updateGroupSetData({ request : theRequest})
             .then( () => {
@@ -60,23 +61,4 @@ export default class GroupDropHandler {
         return parameter;
     }
 
-    createQuestionUpdateRequestsParameter(groupsWithQuestions) {
-        let parameter = [];
-
-        this.questionListNoGroup.content.forEach(nextItem => {
-            if (!nextItem.isGap) {
-                parameter.push(new QuestionUpdateReq(nextItem.question.Id, 0)); // make Group__c undefined 
-            }
-        });
-
-        let nextQuestionNumber = 1;
-        groupsWithQuestions.forEach(nextGroup => {
-            nextGroup.content.forEach( nextItem => {
-                if (!nextItem.isGap) {
-                    parameter.push(new QuestionUpdateReq(nextItem.question.Id, nextQuestionNumber++, nextGroup.group.Id));
-                }
-            })
-        })
-        return parameter;
-    }
 }

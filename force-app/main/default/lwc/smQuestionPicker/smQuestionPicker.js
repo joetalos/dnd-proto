@@ -1,15 +1,12 @@
 import { LightningElement, track, wire } from 'lwc';
 import getQuestionSetData from '@salesforce/apex/QuestionController.getQuestionSetData';
-import updateQuestionSetData from '@salesforce/apex/QuestionController.updateQuestionSetData';
 import { refreshApex } from '@salesforce/apex';
-import SmGroupGap from 'c/smGroupGap';
 import GapItemModel from 'c/gapItemModel';
 import GroupItemModel from 'c/groupItemModel';
 import QuestionItemModel from 'c/questionItemModel';
 import QuestionGapItemModel from 'c/questionGapItemModel';
-import GroupUpdateReq from 'c/groupUpdateReq';
-import QuestionUpdateReq from 'c/questionUpdateReq';
 import GroupDropHandler from 'c/groupDropHandler';
+import QuestionDropHandler from 'c/questionDropHandler';
 
 //Constants for the status picklist
 const GROUP_NONE = undefined;
@@ -123,94 +120,21 @@ export default class SmQuestionPicker extends LightningElement {
         }
     }
 
-    reorderAfterDrop(draggedItem, newGroupNumber, gapNumber) {
-        let groupsWithNewOrderOfQuestions = [];
-        // care for the case when a question is dropped into the orphan (no group) list
-        if (newGroupNumber === 0) {
-            groupsWithNewOrderOfQuestions.push({
-                content : [ draggedItem ]
-            });
-        }
-
-        this.questionGroups.forEach(nextGroup => {
-            // skip if it's a gap
-            if (nextGroup instanceof GroupItemModel) {
-                let currentContent = [];
-                groupsWithNewOrderOfQuestions.push( {
-                    group : nextGroup.group,
-                    content : currentContent
-                });
-                nextGroup.content.forEach(nextContentItem => {
-                    if (nextContentItem.isGap) {
-                        if (nextGroup.group.GroupNumber__c === newGroupNumber && nextContentItem.gapNumber === gapNumber) {
-                            // insert the dragged question here
-                            currentContent.push(draggedItem);
-                        }
-                    }
-                    else { // then it's a question
-                        if (nextContentItem.question.Id !== draggedItem.Id) {
-                            // this is just another question, so insert
-                            currentContent.push(nextContentItem.question);
-                        }
-                        // otherwise do not insert; this is the question we're dragging
-                }
-                })
-            }
-        })
-        return groupsWithNewOrderOfQuestions;
-    }
-
-    createApexMethodParameter(groupsWithQuestions) {
-        let parameter = [];
-        let nextQuestionNumber = 1;
-        groupsWithQuestions.forEach(nextGroup => {
-            if (!nextGroup.group) {
-                let newlyOrphanedQuestion = nextGroup.content[0];
-                parameter.push({
-                    questionId : newlyOrphanedQuestion.Id,
-                    questionNumber : 0
-                });
-            }
-            else {
-                nextGroup.content.forEach( nextQuestion => {
-                    parameter.push({
-                        questionId : nextQuestion.Id,
-                        questionNumber : nextQuestionNumber++,
-                        groupId : nextGroup.group.Id
-                    })
-                })
-            }
-        })
-        return parameter;
+    resetDraggingBuffers() {
+        this.draggingQuestion = "";
+        this.draggingGroup = "";
     }
 
     //Handle the custom event dispatched from a DROP TARGET     
     handleQuestionItemDrop(evt) {
-
-        console.log('Dropped - Id is: ' + this.draggingQuestion.Id);
+        console.log('Dropped - questionId is: ' + this.draggingQuestion.Id);
 
         // only if we're dragging a Question
         if (this.draggingQuestion) {
-            let newGroupNumber = evt.detail.groupNumber;
-            let gapNumber = evt.detail.gapNumber;
-            console.log('newGroupNumber is ' + newGroupNumber + ', gapNumber is ' + gapNumber);
-
-            // pass in the dragged question
-            let parameter = this.createApexMethodParameter(this.reorderAfterDrop(this.draggingQuestion, newGroupNumber, gapNumber));
-            let theRequest = {
-                updateRequests : parameter
-            }
-            updateQuestionSetData({ request : theRequest})
-                .then( () => {
-                    refreshApex(this.questionSetData);
-                });
+            let dropHandler = new QuestionDropHandler(this.questionSetData, this.questionListNoGroup, this.questionGroups);
+            dropHandler.handleQuestionItemDrop(evt, this.draggingQuestion);
         }
         this.resetDraggingBuffers();
-    }
-
-    resetDraggingBuffers() {
-        this.draggingQuestion = "";
-        this.draggingGroup = "";
     }
 
     handleGroupGapDrop(evt) {
