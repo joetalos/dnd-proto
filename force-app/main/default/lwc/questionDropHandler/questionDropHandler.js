@@ -1,4 +1,4 @@
-import updateQuestionSetData from '@salesforce/apex/QuestionController.updateQuestionSetData';
+import updateGroupSetData from '@salesforce/apex/QuestionController.updateGroupSetData';
 import { refreshApex } from '@salesforce/apex';
 import GroupItemModel from 'c/groupItemModel';
 import QuestionItemModel from 'c/questionItemModel';
@@ -29,7 +29,7 @@ export default class QuestionDropHandler extends DropHandler {
         let theRequest = {
             updateRequests : this.createQuestionUpdateRequestsParameter(this.questionListNoGroup, newOrder)
         }
-        updateQuestionSetData({ request : theRequest})
+        updateGroupSetData({ request : theRequest})
             .then( () => {
                 refreshApex(this.questionSetData);
             });

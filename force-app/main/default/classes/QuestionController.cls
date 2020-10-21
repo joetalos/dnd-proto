@@ -37,33 +37,29 @@ public without sharing class QuestionController {
 
     private static List<SM_QuestionSetQuestion__c> createQuestionUpdateArray(QuestionDndUpdateRequest request) {
       List<SM_QuestionSetQuestion__c> questionsToUpdate = new List<SM_QuestionSetQuestion__c>();
-      for (QuestionDndUpdateRequest.QuestionUpdateReq nextReq : request.updateRequests) {
-        SM_QuestionSetQuestion__c qToUpdate = new SM_QuestionSetQuestion__c(
-          Id = nextReq.questionId,
-          QuestionNumber__c = nextReq.questionNumber,
-          Group__c = nextReq.groupId
-        );
-        questionsToUpdate.add(qToUpdate);
+      if (request.updateRequests != null) {
+        for (QuestionDndUpdateRequest.QuestionUpdateReq nextReq : request.updateRequests) {
+          SM_QuestionSetQuestion__c qToUpdate = new SM_QuestionSetQuestion__c(
+            Id = nextReq.questionId,
+            QuestionNumber__c = nextReq.questionNumber,
+            Group__c = nextReq.groupId
+          );
+          questionsToUpdate.add(qToUpdate);
+        }
       }
       return questionsToUpdate;
     }
 
-    @AuraEnabled
-    public static SM_QuestionSet__c updateQuestionSetData(QuestionDndUpdateRequest request) {
-      List<SM_QuestionSetQuestion__c> questionsToUpdate = createQuestionUpdateArray(request);
-      update questionsToUpdate;
-
-      return getQuestionSetData();
-    }
-
     private static List<SM_QuestionSetGroup__c> createGroupUpdateArray(QuestionDndUpdateRequest request) {
       List<SM_QuestionSetGroup__c	> groupsToUpdate = new List<SM_QuestionSetGroup__c	>();
-      for (QuestionDndUpdateRequest.GroupUpdateReq nextReq : request.groupUpdateRequests) {
-        SM_QuestionSetGroup__c grToUpdate = new SM_QuestionSetGroup__c	(
-          Id = nextReq.groupId,
-          GroupNumber__c = nextReq.groupNumber
-        );
-        groupsToUpdate.add(grToUpdate);
+      if (request.groupUpdateRequests != null) {
+        for (QuestionDndUpdateRequest.GroupUpdateReq nextReq : request.groupUpdateRequests) {
+          SM_QuestionSetGroup__c grToUpdate = new SM_QuestionSetGroup__c	(
+            Id = nextReq.groupId,
+            GroupNumber__c = nextReq.groupNumber
+          );
+          groupsToUpdate.add(grToUpdate);
+        }
       }
       return groupsToUpdate;
     }
