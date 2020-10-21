@@ -1,6 +1,5 @@
 import { LightningElement, track, wire } from 'lwc';
 import getQuestionSetData from '@salesforce/apex/QuestionController.getQuestionSetData';
-import { refreshApex } from '@salesforce/apex';
 import GapItemModel from 'c/gapItemModel';
 import GroupItemModel from 'c/groupItemModel';
 import QuestionItemModel from 'c/questionItemModel';
@@ -98,11 +97,6 @@ export default class SmQuestionPicker extends LightningElement {
         }
     }
     
-    //Manually refresh the data and the reactive DROP TARGET lists 
-    refreshData() {
-        refreshApex(this.questionGroups);
-    }
-
     // Handle the custom event dispatched originally from a DRAG SOURCE 
     // and proxied from a DROP TARGET
     handleItemDrag(evt) {
